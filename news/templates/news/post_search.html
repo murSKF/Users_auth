@@ -1,0 +1,147 @@
+{% extends 'default.html' %}
+
+{% block title %}
+Поиск новостей
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <h1 class="mb-4">Поиск новостей</h1>
+
+    <!-- Форма поиска -->
+    <form method="get" class="card p-4 mb-4 shadow-sm">
+
+        <div class="mb-3">
+            <label class="form_label">Название</label>
+            <input 
+                type="text"
+                name="title"
+                class="form-control"
+                value="{{ request.GET.title }}">
+        </div>
+
+        <div class="mb-3">
+            <label class="form_label">Автор</label>
+            <input 
+                type="text"
+                name="author"
+                class="form-control"
+                value="{{ request.GET.author }}">
+        </div>
+
+        <div class="mb-3">
+            <label class="form_label">С даты</label>
+            <input 
+                type="date"
+                name="date_from"
+                class="form-control"
+                value="{{ request.GET.date_from }}">
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Найти
+        </button>
+
+    </form>
+
+<!-- Результаты -->
+ {% for post in posts %}
+    
+    <div class="card mb-3 shadow-sm">
+        <div class="card-body">
+
+            <h4>
+                <a href="{% url 'news_detail' post.id %}"
+                class="text-decoration-none">
+
+                {{ post.title }}
+
+                </a>
+            </h4>
+
+            <p class="text-muted">
+                {{ post.created_at|date:"d.m.Y" }}
+            </p>
+
+            <p>
+                {{ post.text|truncatechars:150 }}
+            </p>
+
+        </div>
+    </div>
+
+{% empty %}
+    <p class="text-center text-muted">
+        Ничего не найдено
+    </p>
+{% endfor %}
+
+<!-- Пагинация -->
+ {% if page_obj.has_other_pages %}
+
+ <nav>
+    <ul class="pagination justify-content-center mt-4">
+
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link"
+                href="?{{ request.GET.urlencode }}&page=1">
+                Первая
+            </a>
+        </li>
+
+        <li class="page-item">
+            <a class="page-link"
+                href="?{{ request.GET.urlencode }}&page={{ page_obj.previous_page_number }}">
+                Назад
+            </a>
+        </li>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+
+            {% if num >= page_obj.number|add:"-2" and num <= page_obj.number|add:"2" %}
+
+                {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                {% else %}
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="?{{ request.GET.urlencode }}&page={{ num }}">
+                            {{ num }}
+                        </a>
+                    </li>
+                {% endif %}
+
+            {% endif %}
+
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link"
+                href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}">
+                Следующая
+            </a>
+        </li>
+
+        <li class="page-item">
+            <a class="page-link"
+                href="?{{ request.GET.urlencode }}&page={{ page_obj.paginator_num_pages }}">
+                Последняя
+            </a>
+        </li>
+        {% endif %}
+
+    </ul>
+ </nav>
+
+ {% endif %}
+
+</div>
+
+{% endblock %}

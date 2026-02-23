@@ -1,0 +1,19 @@
+{% extends 'default.html' %}
+
+{% block content %}
+
+<h2>Удалить статью?</h2>
+
+<p>{{ post.title }}</p>
+
+<form method="post">
+    {% csrf_token %}
+
+    <button type="submit" class="btn btn-danger">
+        Удалить
+    </button>
+</form>
+
+<a href="{% url 'news_list' %}">Отмена</a>
+
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends 'default.html' %}
+{% load socialaccount %}
+
+{% block content %}
+<h2>Вход</h2>
+
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <button type="submit" class="btn btn-primary">
+        Войти
+    </button>
+
+    <a href="{% provider_login_url 'yandex' %}">
+        Войти через Yandex
+    </a>
+</form>
+{% endblock %}

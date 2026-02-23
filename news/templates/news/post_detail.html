@@ -1,0 +1,53 @@
+{% extends 'default.html' %}
+{% load censor %}
+
+{% block title %}
+{{ post.title|censor }}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+
+    <div class="card shadow">
+        <div class="card-body">
+
+            <h1 class="card-title mb-3">
+                {{ post.title|censor }}
+            </h1>
+
+            <p class="text-muted">
+                Автор: {{ post.author.user.username }} |
+                {{ post.created_at|date:"d.m.Y" }}
+            </p>
+
+            <hr>
+
+            <p class="card-text fs-5">
+                {{ post.text|censor }}
+            </p>
+
+            <hr>
+
+            <p>
+                <strong>Рейтинг:</strong> {{ post.rating }}
+            </p>
+
+            <hr>
+
+            <p>
+                <strong>Комментарии:</strong> {{ comment.user.username }}
+            </p>
+
+            <a href="{% url 'news_list' %}" class="btn btn-secondary mt-3">
+                Назад к новостям
+            </a>
+
+            <a href="{% url 'news_search' %}" class="nav-link">
+                Поиск
+            </a>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}

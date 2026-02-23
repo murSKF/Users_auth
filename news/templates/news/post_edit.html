@@ -1,0 +1,23 @@
+{% extends "default.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+    <h2 class="mb-4">Редактировать новость</h2>
+    <div class="card shadow-sm p-4">
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div class="mt-3">
+                <button type="submit" class="btn btn-success">
+                    Сохранить
+                </button>
+
+                <a href="{% url 'news_list' %}" class="btn btn-secondary ms-2">
+                    Назад
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
