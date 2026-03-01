@@ -1,4 +1,6 @@
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
+from django.views import View
+from .models import Category
 from .models import Post
 import django.core.paginator
 from .forms import PostForm
@@ -11,6 +13,8 @@ from django.views.generic import DeleteView
 from django.views.generic import UpdateView
 from django.views.generic import ListView
 from django.views.generic import DetailView
+from django.utils import timezone
+from django.core.exceptions import ValidationError
 
 
 class NewsListView(ListView):
@@ -79,6 +83,21 @@ class NewsCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     permission_required = 'news.add_post'
 
     def form_valid(self, form):
+        today = timezone.now().date()
+
+        news_today = Post.objects.filter(
+            author=self.request.user,
+            type='NW',
+            created_at__date=today
+        ).count()
+
+        if news_today >=3:
+            form.add_error(
+                None,
+                'Вы не можете публиковать более 3 новостей в сутки.'
+            )
+            return self.form_invalid(form)
+        
         post = form.save(commit=False)
         post.type = 'NW'
         post.author = self.request.user
@@ -152,5 +171,24 @@ def become_author(request):
     return redirect('/news/')
     
 
+class SubscribeCategoryView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        category = get_object_or_404(Category, pk=pk)
+        category.subscribers.add(request.user)
+        return redirect('category_posts', pk=pk)
+    
 
+class CategoryPostListView(ListView):
+    model = Post
+    template_name = 'news/category_posts.html'
+    context_object_name = 'posts'
+
+    def get_queryset(self):
+        self.category = get_object_or_404(Category, pk=self.kwargs['pk'])
+        return Post.objects.filter(categories=self.category)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['category'] = self.category
+        return context
 

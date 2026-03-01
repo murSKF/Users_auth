@@ -1,0 +1,19 @@
+<h2>{{ category.name }}</h2>
+
+{% if user.is_authenticated %}
+    {% if user not in category.subscribers.all %}
+        <form method="post" action="{% url 'subscribe_category' category.pk %}">
+            {% csrf_token %}
+            <button type="submit">Подписаться</button>
+        </form>
+    {% else %}
+        <p>Вы подписаны</p>
+    {% endif %}
+{% endif %}
+
+<hr>
+
+{% for post in posts %}
+    <h3>{{ post.title }}</h3>
+    <p>{{ post.text|truncatechars:100 }}</p>
+{% endfor %}

@@ -129,13 +129,13 @@ STATIC_URL = 'static/'
 
 LOGIN_URL = '/accounts/login'
 LOGIN_REDIRECT_URL = '/news/'
-LOGOUT_REDIRECT_URL = '/news/'
+LOGOUT_REDIRECT_URL = '/accounts/login/'
 
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = True
 ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
-ACCOUNT_EMAIL_VERIFICATION = 'none'
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',

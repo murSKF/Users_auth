@@ -12,6 +12,8 @@ from .views import (
     ArticleDeleteView,
     ArticleUpdateView,
     ArticleDetailView,
+    SubscribeCategoryView,
+    CategoryPostListView,
 )
 
 
@@ -29,4 +31,7 @@ urlpatterns = [
     path('articles/<int:pk>/edit/', ArticleUpdateView.as_view(), name='article_edit'),
     path('articles/<int:pk>/delete/', ArticleDeleteView.as_view(), name='article_delete'),
     path('become_author/', become_author, name='become_author'),
+
+    path('category/<int:pk>/subscribe/', SubscribeCategoryView.as_view(), name='subscribe_category'),
+    path('category/<int:pk>/', CategoryPostListView.as_view(), name='category_posts'),
 ]
