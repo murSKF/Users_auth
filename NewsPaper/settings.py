@@ -11,6 +11,14 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    'weekly-newsletter': {
+        'task': 'news.tasks.weekly_digest',
+        'schedule': crontab(hour=8, minute=0, day_of_week=1),
+    },
+}
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -44,6 +52,8 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.yandex',
+
+    'django_celery_beat',
 ]
 
 SITE_ID = 1
@@ -150,3 +160,6 @@ ACCOUNTS_FORMS = {
     }
 
 
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
