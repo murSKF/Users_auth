@@ -6,6 +6,7 @@ from django.db.models.signals import m2m_changed
 from django.core.mail import EmailMultiAlternatives
 from .models import Post
 from .tasks import send_notification_email
+from django.core.cache import cache
 
 @receiver(post_save, sender=Post)
 def notify_subscribers(sender, instance, created, **kwargs):
@@ -51,5 +52,9 @@ def notify_subscribers(sender, instance, action, **kwargs):
             msg.attach_alternative(html_context, "text/html")
             msg.send()
 
+
+@receiver(post_save, sender=Post)
+def clear_post_cache(sender, instance, **kwargs):
+    cache.delete(f'post-{instance.pk}')
 
     

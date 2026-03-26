@@ -1,6 +1,9 @@
 {% extends 'default.html' %}
+{% load cache %}
+
 {% load censor %}
 
+{% cache 150 menu %}
 {% block title %}
 Список новостей
 {% endblock %}

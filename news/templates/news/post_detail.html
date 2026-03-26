@@ -1,10 +1,12 @@
 {% extends 'default.html' %}
+{% load cache %}
 {% load censor %}
 
 {% block title %}
 {{ post.title|censor }}
 {% endblock %}
 
+{% cache 200 container %}
 {% block content %}
 <div class="container mt-5">
 

@@ -1,7 +1,9 @@
 {% extends "default.html" %}
+{% load cache %}
 
 {% block content %}
 
+{% cache 200 container %}
 <div class="container mt-4">
     <h2 class="mb-4">Редактировать новость</h2>
     <div class="card shadow-sm p-4">

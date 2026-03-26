@@ -1,7 +1,9 @@
 {% extends 'default.html' %}
+{% load cache %}
 
 {% block content %}
-
+ 
+{% cache 300 delete %}
 <h2>Удалить статью?</h2>
 
 <p>{{ post.title }}</p>

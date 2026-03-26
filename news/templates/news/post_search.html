@@ -1,9 +1,11 @@
 {% extends 'default.html' %}
+{% load cache %}
 
 {% block title %}
 Поиск новостей
 {% endblock %}
 
+{% cache 200 container %}
 {% block content %}
 
 <div class="container mt-5">

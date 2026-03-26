@@ -15,8 +15,12 @@ from django.views.generic import ListView
 from django.views.generic import DetailView
 from django.utils import timezone
 from django.core.exceptions import ValidationError
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
+from django.core.cache import cache
 
 
+@method_decorator(cache_page(60 * 5), name='dispatch')
 class NewsListView(ListView):
     model = Post
     template_name = 'news/post_list.html'
@@ -28,6 +32,7 @@ class NewsListView(ListView):
         return Post.objects.all()
     
 
+@method_decorator(cache_page(60 * 5), name='dispatch')
 class ArticleListView(ListView):
     model = Post
     template_name = 'news/post_list.html'
@@ -35,7 +40,7 @@ class ArticleListView(ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        return Post.objects.filter(type='AR').order_by('-created_at')
+        return Post.objects.filter(type='AR').order_by('-created_at',)
 
 
 class NewsDetailView(DetailView):
@@ -43,13 +48,32 @@ class NewsDetailView(DetailView):
     template_name = 'news/post_detail.html'
     context_object_name = 'post'
 
+    def get_object(self, *args, **kwargs):
+        obj = cache.get(f'post-{self.kwargs["pk"]}', None)
+
+        if not obj:
+            obj = super().get_object(queryset=self.queryset)
+            cache.set(f'post-{self.kwargs["pk"]}', obj)
+
+        return obj
+
 
 class ArticleDetailView(DetailView):
     model = Post
     template_name = 'news/post_detail.html'
     context_object_name = 'post'
 
+    def get_object(self, *args, **kwargs):
+        obj = cache.get(f'post-{self.kwargs["pk"]}', None)
 
+        if not obj:
+            obj = super().get_object(queryset=self.queryset)
+            cache.set(f'post-{self.kwargs["pk"]}', obj)
+
+        return obj
+
+
+@method_decorator(cache_page(60 * 5), name='dispatch')
 class NewsSearchView(ListView):
     model = Post
     template_name = 'news/post_search.html'
@@ -60,14 +84,14 @@ class NewsSearchView(ListView):
         qs = Post.objects.all().order_by('-created_at')
 
         title = self.request.GET.get('title')
-        auhtor = self.request.GET.get('author')
+        author = self.request.GET.get('author')
         date_from = self.request.GET.get('date_from')
 
         if title:
             qs = qs.filter(title_icontains=title)
 
-        if auhtor:
-            qs = qs.filter(auhtor_username_icontains=auhtor)
+        if author:
+            qs = qs.filter(author_username_icontains=author)
 
         if date_from:
             qs = qs.filter(created_at_gte=date_from)
@@ -98,6 +122,7 @@ class NewsCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
             )
             return self.form_invalid(form)
         
+    
         post = form.save(commit=False)
         post.type = 'NW'
         post.author = self.request.user
@@ -171,6 +196,7 @@ def become_author(request):
     return redirect('/news/')
     
 
+@cache_page(60)
 class SubscribeCategoryView(LoginRequiredMixin, View):
     def post(self, request, pk):
         category = get_object_or_404(Category, pk=pk)
@@ -178,6 +204,7 @@ class SubscribeCategoryView(LoginRequiredMixin, View):
         return redirect('category_posts', pk=pk)
     
 
+@method_decorator(cache_page(60 * 5), name='dispatch')
 class CategoryPostListView(ListView):
     model = Post
     template_name = 'news/category_posts.html'

@@ -1,5 +1,7 @@
+{% load cache %}
 <h2>{{ category.name }}</h2>
 
+{% cache 300 form %}
 {% if user.is_authenticated %}
     {% if user not in category.subscribers.all %}
         <form method="post" action="{% url 'subscribe_category' category.pk %}">

@@ -1,6 +1,8 @@
 {% extends 'default.html' %}
+{% load cache %}
 
 {% block content %}
+{% cache 200 form %}
 
 <h2>Форма статьи</h2>
 

@@ -10,8 +10,20 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
+import logging
+from django.utils.log import RequireDebugTrue, RequireDebugFalse
 from pathlib import Path
 from celery.schedules import crontab
+
+
+logger = logging.getLogger('django')
+
+logger.debug('DEBUG message')
+logger.info('INFO message')
+logger.warning('WARNING message')
+logger.error('ERROR message')
+
 
 CELERY_BEAT_SCHEDULE = {
     'weekly-newsletter': {
@@ -21,7 +33,158 @@ CELERY_BEAT_SCHEDULE = {
 }
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+
+    # Фильтры
+    'filters': {
+        'require_debug_true': {
+            '()': RequireDebugTrue,
+        },
+        'require_debug_false': {
+            '()': RequireDebugFalse,
+        },
+        
+    },
+
+    # Форматы
+    'formatters': {
+
+        # Консоль DEBUG/INFO
+        'simple': {
+            'format': '%(asctime)s %(levelname)s %(message)s'
+        },
+
+        # WARNING (с путем)
+        'verbose': {
+            'format': '%(asctime)s %(levelname)s %(pathname)s %(message)s'
+        },
+
+        # ERROR (со стеком)
+        'error': {
+            'format': '%(asctime)s %(levelname)s %(pathname)s %(message)s'
+        },
+
+        # general.log
+        'general': {
+            'format': '%(asctime)s %(levelname)s %(module)s %(message)s'
+        },
+
+        # security.log
+        'security': {
+            'format': '%(asctime)s %(levelname)s %(module)s %(message)s'
+        },
+    },
+
+    # HANDLERS
+    'handlers': {
+
+        # КОНСОЛЬ
+        'console_debug': {
+            'class': 'logging.StreamHandler',
+            'level': 'DEBUG',
+            'filters': ['require_debug_true'],
+            'formatter': 'simple',
+        },
+
+        'console_warning': {
+            'class': 'logging.StreamHandler',
+            'level': 'WARNING',
+            'filters': ['require_debug_true'],
+            'formatter': 'verbose',
+        },
+
+        'console_error': {
+            'class': 'logging.StreamHandler',
+            'level': 'ERROR',
+            'filters': ['require_debug_true'],
+            'formatter': 'error',
+        },
+
+        # general.log
+        'file_general': {
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'general.log'),
+            'level': 'INFO',
+            'filters': ['require_debug_false'],
+            'formatter': 'general',
+        },
+
+        # errors.log
+        'file_errors': {
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'errors.log'),
+            'level': 'ERROR',
+            'formatter': 'error',
+        },
+
+        # security.log
+        'file_security': {
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'security.log'),
+            'level': 'INFO',
+            'formatter': 'security',
+        },
+
+        # EMAIL
+        'mail_admins': {
+            'class': 'django.utils.log.AdminEmailHandler',
+            'level': 'ERROR',
+            'filters': ['require_debug_false'],
+            'include_html': False,
+        },
+    },
+
+    # ЛОГГЕРЫ
+    'loggers': {
+
+        # ОСНОВНОЙ DJANGO
+        'django': {
+            'handlers': ['console_debug', 'console_warning', 'console_error', 'file_general'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+
+        # ОШИБКИ
+        'django.request': {
+            'handlers': ['file_errors', 'mail_admins'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+
+        'django.server': {
+            'handlers': ['file_errors', 'mail_admins'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+
+        'django.template': {
+            'handlers': ['file_errors'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+
+        'django.db.backends': {
+            'handlers': ['file_errors'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+
+        # БЕЗОПАСНОСТЬ
+        'django_security': {
+            'handlers': ['file_security'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    }
+}
+
+
+ADMINS = [('Admin', 'shhh.mur23@gmail.com')]
 
 
 # Quick-start development settings - unsuitable for production
@@ -54,6 +217,8 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.yandex',
 
     'django_celery_beat',
+
+    'django_filters',
 ]
 
 SITE_ID = 1
@@ -95,8 +260,14 @@ WSGI_APPLICATION = 'NewsPaper.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
         'NAME': BASE_DIR / 'db.sqlite3',
-    }
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': '',
+        'HOST': 'localhost',
+        'PORT': '5432',
+    },
 }
 
 
@@ -163,3 +334,11 @@ ACCOUNTS_FORMS = {
 CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
+
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "news-cache"
+    }
+}
